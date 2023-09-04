@@ -1,4 +1,5 @@
 <?php
+    namespace Core;
     /**
      * Router
      */
@@ -25,11 +26,8 @@
             //Convert variables with custom regular expression e.g. {id:\d+}
             $route = preg_replace('/\{([a-z]+):([^\}]+)\}/' , '(?P<\1>\2)', $route);
             //Add start and end delimeters , and case insensetive flag
-            if(!$route){
-                $route = '/^' . $route . '$/i';
-            }else{
-                $route = '/^\/' . $route . '$/i';
-            }
+            $route = '/^' . $route . '$/i';
+            
             $this->routes[$route] = $params;
         }
 
@@ -65,11 +63,13 @@
         }
 
         public function dispatch($url){
+            $url = $this->removeQueryStringVariables($url);
             if($this->match($url)){
                 $controller = $this->params['controller'];
                 $controller = $this->convertToStudlyCaps($controller);
+                $controller = "App\Controllers\\$controller";
                 if(class_exists($controller)){
-                    $controller_object = new $controller();
+                    $controller_object = new $controller($this->params);
                     $action = $this->params['action'];
                     $action = $this->convertToCamelCase($action);
                     if(is_callable([$controller_object, $action])){
@@ -85,6 +85,18 @@
 
         protected function convertToCamelCase($string){
             return lcfirst($this->convertToStudlyCaps($string));
+        }
+
+        protected function removeQueryStringVariables($url){
+            if($url != ''){
+                $parts = explode('&' , $url , 2);
+                if(strpos($parts[0] , '=') === false){
+                    $url = $parts[0];
+                }else{
+                    $url = '';
+                }
+            }
+            return $url;
         }
     }
 ?>
