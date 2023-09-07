@@ -1,10 +1,13 @@
 <?php
     namespace App\Controllers;
+    use App\Models\Post;
+    use Core\View;
 
     class Posts extends \Core\Controller{
 
         public function indexAction(){
-            echo htmlspecialchars(print_r($_GET , true));
+            $posts = Post::GetAll();
+            View::renderTemplate('Posts/index.html' , ['posts' => $posts]);
         }
 
         public function addNewAction(){
@@ -26,12 +29,12 @@
         }
 
         protected function before() : bool{
-            echo '(before)';
+            
             return true;
         }
 
         protected function after(){
-            echo '(after)';
+           
         }
     }
 
